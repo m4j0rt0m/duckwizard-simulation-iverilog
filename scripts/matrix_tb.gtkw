@@ -1,0 +1,32 @@
+[*]
+[*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
+[*] Wed Nov 18 20:45:22 2020
+[*]
+[dumpfile] "build/matrix_tb/matrix_tb.vcd"
+[dumpfile_mtime] "Wed Nov 18 20:44:23 2020"
+[dumpfile_size] 5179
+[savefile] "scripts/matrix_tb.gtkw"
+[timestart] 0
+[size] 2560 1017
+[pos] -1 -1
+*-6.000000 110 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 43
+[signals_width] 211
+[sst_expanded] 0
+[sst_vpaned_height] 293
+@28
+matrix_tb.clk
+matrix_tb.arstn
+@200
+-
+@24
+matrix_tb.x_idx[1:0]
+matrix_tb.y_idx[1:0]
+@200
+-
+@24
+matrix_tb.matrix_value[4:0]
+matrix_tb.y_idx_int[1:0]
+matrix_tb.x_idx_int[1:0]
+[pattern_trace] 1
+[pattern_trace] 0
