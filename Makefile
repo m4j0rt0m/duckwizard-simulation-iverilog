@@ -25,7 +25,6 @@ EXT_VERILOG_SRC      ?=
 EXT_VERILOG_HEADERS  ?=
 EXT_PACKAGE_SRC      ?=
 EXT_MEM_SRC          ?=
-EXT_INCLUDE_DIRS     ?=
 EXT_RTL_PATHS        ?=
 
 ### simulation sources directories ###
@@ -42,7 +41,7 @@ MEM_SRC               = $(EXT_MEM_SRC) $(wildcard $(shell find $(MEM_DIRS) -type
 RTL_PATHS             = $(EXT_RTL_PATHS) $(RTL_DIRS) $(INCLUDE_DIRS) $(PACKAGE_DIRS) $(MEM_DIRS)
 
 ### include flags ###
-INCLUDES_FLAGS        = $(addprefix -I, $(INCLUDE_DIRS)) $(addprefix -I, $(EXT_INCLUDE_DIRS))
+INCLUDES_FLAGS        = $(addprefix -I, $(RTL_PATHS))
 
 ### simulation flags ###
 SIM_TOOL             ?= iverilog
