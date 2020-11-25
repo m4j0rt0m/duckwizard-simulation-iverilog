@@ -1,5 +1,4 @@
 ###################################################################
-# Project:                                                        #
 # Description:      RTL Simulation - Makefile                     #
 #                                                                 #
 # Template written by Abraham J. Ruiz R.                          #
@@ -7,6 +6,8 @@
 ###################################################################
 
 SHELL                := /bin/bash
+REMOTE-URL-SSH       := git@github.com:m4j0rt0m/rtl-develop-template-simulation.git
+REMOTE-URL-HTTPS     := https://github.com/m4j0rt0m/rtl-develop-template-simulation.git
 
 MKFILE_PATH           = $(abspath $(firstword $(MAKEFILE_LIST)))
 TOP_DIR               = $(shell dirname $(MKFILE_PATH))
