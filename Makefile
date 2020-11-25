@@ -6,6 +6,8 @@
 #   https://github.com/m4j0rt0m/rtl-develop-template-simulation   #
 ###################################################################
 
+SHELL                := /bin/bash
+
 MKFILE_PATH           = $(abspath $(firstword $(MAKEFILE_LIST)))
 TOP_DIR               = $(shell dirname $(MKFILE_PATH))
 
@@ -50,7 +52,7 @@ else
 VCD_FLAG              =
 endif
 SIM_OPEN_WAVE        ?= no
-SIM_IVERILOG_FLAGS   ?= -o $(BUILD_DIR)/$(SIM_TOP_MODULE).tb -s $(SIM_TOP_MODULE) -g2012 -DSIMULATION $(VCD_FLAG) $(INCLUDE_FLAGS) $(VERILOG_SRC) $(PACKAGE_SRC)
+SIM_IVERILOG_FLAGS   ?= -o $(BUILD_DIR)/$(SIM_TOP_MODULE).tb -s $(SIM_TOP_MODULE) -g2012 -DSIMULATION $(VCD_FLAG) $(INCLUDES_FLAGS) $(VERILOG_SRC) $(PACKAGE_SRC)
 SIM_RUN_VVP          ?= vvp
 
 ### simulation objects ###
@@ -67,7 +69,12 @@ sim: clean-top $(VCD_FILE)
 
 #H# veritedium      : Run veritedium AUTO features
 veritedium:
+	@echo "Running Veritedium Autocomplete..."
 	@$(foreach SRC,$(VERILOG_SRC),$(call veritedium-command,$(SRC)))
+	@echo "Deleting unnecessary backup files (*~ or *.bak)..."
+	find ./* -name "*~" -delete
+	find ./* -name "*.bak" -delete
+	@echo "Finished!"
 
 %.vcd: %.tb $(RTL_OBJS)
 	@if [[ "$(SIM_TOOL)" == "iverilog" ]]; then\
