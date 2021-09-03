@@ -1,1 +1,1 @@
-# RTL Simulation (Template)
+# duckWizard: Simulation with Icarus Verilog
