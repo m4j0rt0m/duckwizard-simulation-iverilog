@@ -22,7 +22,9 @@ include $(SCRIPTS_DIR)/misc.mk
 
 ### external sources wildcards ###
 EXT_VERILOG_SRC      ?=
+EXT_SVERILOG_SRC     ?=
 EXT_VERILOG_HEADERS  ?=
+EXT_SVERILOG_HEADERS ?=
 EXT_PACKAGE_SRC      ?=
 EXT_MEM_SRC          ?=
 EXT_RTL_PATHS        ?=
@@ -42,9 +44,9 @@ SVERILOG_HEADERS      =
 PACKAGE_SRC           =
 else
 VERILOG_SRC           = $(EXT_VERILOG_SRC) $(wildcard $(shell find $(RTL_DIRS) -type f \( -iname \*.v -o -iname \*.vhdl \)))
-SVERILOG_SRC          = $(wildcard $(shell find $(RTL_DIRS) -type f \( -iname \*.sv \)))
-SVERILOG_HEADERS      = $(wildcard $(shell find $(INCLUDE_DIRS) -type f \( -iname \*.svh -o -iname \*.sv \)))
-PACKAGE_SRC           = $(EXT_PACKAGE_SRC) $(shell $(SCRIPTS_DIR)/order_sv_pkg $(wildcard $(shell find $(PACKAGE_DIRS) -type f \( -iname \*.sv \))))
+SVERILOG_SRC          = $(EXT_SVERILOG_SRC) $(wildcard $(shell find $(RTL_DIRS) -type f \( -iname \*.sv \)))
+SVERILOG_HEADERS      = $(EXT_SVERILOG_HEADERS) $(wildcard $(shell find $(INCLUDE_DIRS) -type f \( -iname \*.svh -o -iname \*.sv \)))
+PACKAGE_SRC           = $(shell $(SCRIPTS_DIR)/order_sv_pkg $(EXT_PACKAGE_SRC) $(wildcard $(shell find $(PACKAGE_DIRS) -type f \( -iname \*.sv \))))
 endif
 VERILOG_HEADERS       = $(EXT_VERILOG_HEADERS) $(wildcard $(shell find $(INCLUDE_DIRS) -type f \( -iname \*.h -o -iname \*.vh -o -iname \*.v \)))
 MEM_SRC               = $(EXT_MEM_SRC) $(wildcard $(shell find $(MEM_DIRS) -type f \( -iname \*.bin -o -iname \*.hex \)))
@@ -62,7 +64,8 @@ else
 VCD_FLAG              =
 endif
 SIM_OPEN_WAVE        ?= no
-SIM_IVERILOG_FLAGS   ?= -o $(BUILD_DIR)/$(SIM_TOP_MODULE).tb -s $(SIM_TOP_MODULE) -g2012 -DSIMULATION $(VCD_FLAG) $(INCLUDES_FLAGS) $(PACKAGE_SRC) $(VERILOG_SRC) $(SVERILOG_SRC)
+SIM_TB_FILE          ?= $(BUILD_DIR)/$(SIM_TOP_MODULE).tb
+SIM_IVERILOG_FLAGS   ?= -o $(SIM_TB_FILE) -s $(SIM_TOP_MODULE) -g2012 -DSIMULATION $(VCD_FLAG) $(INCLUDES_FLAGS) $(PACKAGE_SRC) $(VERILOG_SRC) $(SVERILOG_SRC)
 SIM_RUN_VVP          ?= vvp
 
 ### simulation objects ###
@@ -72,15 +75,22 @@ RTL_OBJS              = $(VERILOG_SRC) $(SVERILOG_SRC) $(PACKAGE_SRC) $(VERILOG_
 VCD_FILE              = $(BUILD_DIR)/$(SIM_TOP_MODULE).vcd
 GTK_FILE              = $(SCRIPTS_DIR)/$(SIM_TOP_MODULE).gtkw
 
+### sv2v flags ###
+SV2V_SOURCE :=
+SV2V_SV     := $(notdir $(SV2V_SOURCE))
+SV2V_V      := $(patsubst %.sv,%.v,$(SV2V_SV))
+SV2V_DEST   := "$(SV2V_RTL_DIR)/$(SV2V_V)"
+SV2V_FLAGS  := $(INCLUDES_FLAGS) $(PACKAGE_SRC)
+
 all: sim
 
 #H# sim             : Run simulation
 ifeq ($(USE_SV2V),yes)
-sv2v: sv2v-srcs
+sim: sv2v-srcs-iverilog
 	$(MAKE) SV2V_RERUN=yes sim-sv2v
-sim-sv2v: clean-top $(VCD_FILE)
+sim-sv2v: clean-top run-sim
 else
-sim: clean-top $(VCD_FILE)
+sim: clean-top run-sim
 endif
 
 #H# veritedium      : Run veritedium AUTO features
@@ -93,10 +103,8 @@ veritedium:
 	find ./* -name "*.bak" -delete
 	@echo -e "$(_flag_)Finished!$(_reset_)"
 
-%.vcd: %.tb $(RTL_OBJS)
-	@if [[ "$(SIM_TOOL)" == "iverilog" ]]; then\
-		$(SIM_RUN_VVP) $<;\
-	fi
+run-sim: $(SIM_TB_FILE) $(RTL_OBJS)
+	$(SIM_RUN_VVP) $<
 	@if [[ "$(SIM_CREATE_VCD)" == "yes" ]]; then\
 		mv $(SIM_TOP_MODULE).vcd $(VCD_FILE);\
 		if [[ "$(SIM_OPEN_WAVE)" == "yes" ]]; then\
@@ -117,11 +125,12 @@ veritedium:
 	fi
 
 #H# sv2v-srcs       : Convert RTL sources from SystemVerilog to Verilog (using sv2v tool)
-sv2v-srcs: $(SVERILOG_SRC)
-	@for src in $^; do $(MAKE) sv2v-convert SV2V_SOURCE=$${src}; done
+sv2v-srcs-iverilog:
+	@mkdir -p $(SV2V_RTL_DIR)
+	@for src in $(SVERILOG_SRC); do $(MAKE) sv2v-convert-iverilog SV2V_SOURCE=$${src}; done
 
 #H# sv2v-convert    : Convert SystemVerilog module to Verilog
-sv2v-convert: check-sv2v
+sv2v-convert-iverilog: check-sv2v
 	sv2v --write=$(SV2V_DEST) $(SV2V_FLAGS) $(SV2V_SOURCE)
 
 #H# clean-top       : Delete Top module's build directory
