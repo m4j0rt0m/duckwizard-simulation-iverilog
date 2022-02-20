@@ -1,11 +1,11 @@
 # Author:      Abraham J. Ruiz R.
 # Description: Icarus Verilog Simulation Makefile
-# Version:     1.2
+# Version:     1.3
 # Url:         https://github.com/m4j0rt0m/duckwizard-simulation-iverilog
 
 SHELL                := /bin/bash
-REMOTE-URL-SSH       := git@github.com:m4j0rt0m/rtl-develop-template-simulation.git
-REMOTE-URL-HTTPS     := https://github.com/m4j0rt0m/rtl-develop-template-simulation.git
+REMOTE-URL-SSH       := git@github.com:m4j0rt0m/duckwizard-simulation-iverilog.git
+REMOTE-URL-HTTPS     := https://github.com/m4j0rt0m/duckwizard-simulation-iverilog.git
 
 MKFILE_PATH           = $(abspath $(firstword $(MAKEFILE_LIST)))
 TOP_DIR               = $(shell dirname $(MKFILE_PATH))
