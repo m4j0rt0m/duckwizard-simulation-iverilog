@@ -11,10 +11,10 @@ MKFILE_PATH           = $(abspath $(firstword $(MAKEFILE_LIST)))
 TOP_DIR               = $(shell dirname $(MKFILE_PATH))
 
 ### directories ###
-SOURCE_DIR            = $(TOP_DIR)/src
-SV2V_RTL_DIR          = $(TOP_DIR)/.sv2v
-OUTPUT_DIR            = $(TOP_DIR)/build
+TB_SOURCE_DIR        := $(if $(SIM_SOURCE_DIR),$(SIM_SOURCE_DIR),$(TOP_DIR))
+OUTPUT_DIR           := $(if $(SIM_BUILD_DIR),$(SIM_BUILD_DIR),$(TOP_DIR)/build)
 SCRIPTS_DIR           = $(TOP_DIR)/scripts
+SV2V_RTL_DIR          = $(OUTPUT_DIR)/.sv2v
 
 ### makefile includes ###
 include $(SCRIPTS_DIR)/funct.mk
@@ -30,10 +30,10 @@ EXT_MEM_SRC          ?=
 EXT_RTL_PATHS        ?=
 
 ### simulation sources directories ###
-RTL_DIRS              = $(wildcard $(shell find $(SOURCE_DIR) -type d \( -iname rtl \)))
-INCLUDE_DIRS          = $(wildcard $(shell find $(SOURCE_DIR) -type d \( -iname include \)))
-PACKAGE_DIRS          = $(wildcard $(shell find $(SOURCE_DIR) -type d \( -iname package \)))
-MEM_DIRS              = $(wildcard $(shell find $(SOURCE_DIR) -type d \( -iname mem \)))
+RTL_DIRS              = $(wildcard $(shell find $(TB_SOURCE_DIR) -type d \( -iname rtl \)))
+INCLUDE_DIRS          = $(wildcard $(shell find $(TB_SOURCE_DIR) -type d \( -iname include \)))
+PACKAGE_DIRS          = $(wildcard $(shell find $(TB_SOURCE_DIR) -type d \( -iname package \)))
+MEM_DIRS              = $(wildcard $(shell find $(TB_SOURCE_DIR) -type d \( -iname mem \)))
 RTL_PATHS             = $(EXT_RTL_PATHS) $(RTL_DIRS) $(INCLUDE_DIRS) $(PACKAGE_DIRS) $(MEM_DIRS)
 
 ### sources wildcards ###
@@ -73,7 +73,7 @@ SIM_TOP_MODULE       ?=
 BUILD_DIR             = $(OUTPUT_DIR)/$(SIM_TOP_MODULE)
 RTL_OBJS              = $(VERILOG_SRC) $(SVERILOG_SRC) $(PACKAGE_SRC) $(VERILOG_HEADERS) $(SVERILOG_HEADERS) $(MEM_SRC)
 VCD_FILE              = $(BUILD_DIR)/$(SIM_TOP_MODULE).vcd
-GTK_FILE              = $(SCRIPTS_DIR)/$(SIM_TOP_MODULE).gtkw
+GTK_FILE              = $(TB_SOURCE_DIR)/scripts/$(SIM_TOP_MODULE).gtkw
 
 ### sv2v flags ###
 SV2V_SOURCE :=
@@ -126,6 +126,7 @@ run-sim: $(SIM_TB_FILE) $(RTL_OBJS)
 
 #H# sv2v-srcs       : Convert RTL sources from SystemVerilog to Verilog (using sv2v tool)
 sv2v-srcs-iverilog:
+	@rm -rvf .sv2v/*
 	@mkdir -p $(SV2V_RTL_DIR)
 	@for src in $(SVERILOG_SRC); do $(MAKE) sv2v-convert-iverilog SV2V_SOURCE=$${src}; done
 
@@ -139,7 +140,7 @@ clean-top:
 
 #H# clean           : Clean build directory
 clean:
-	rm -rf build/*
+	rm -rf $(OUTPUT_DIR)/*
 
 #H# help            : Display help
 help: Makefile $(SCRIPTS_DIR)/misc.mk
